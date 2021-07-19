@@ -42,7 +42,7 @@ input[type="radio"] {
 
 .board {
   width: 100vw;
-  height: 60vh;
+  height: 21em;
   display: grid;
   justify-content: center;
   align-content: center;
@@ -155,8 +155,3 @@ input[type="radio"] {
   display: flex;
 }
 
-@media (orientation: landscape) {
-  .board {
-    height: 100vh;
-  }
-}
