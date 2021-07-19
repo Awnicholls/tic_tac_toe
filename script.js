@@ -54,28 +54,30 @@ const Player = (sign) => {
   };
 };
 
-const minimaxAi = ((percentage) => {
-  let aiPrecision = percentage;
+const minimaxAi = ((level) => {
+  let aiLevel = level;
 
-  const setAiPercentage = (percentage) => {
-    aiPrecision = percentage;
+  const setAilevel = (level) => {
+    aiLevel = level;
   };
-  const getAiPercentage = () => {
-    return aiPrecision;
+
+  const getAilevel = () => {
+    return aiLevel;
   };
 
   const chooseField = () => {
 
     const value = Math.floor(Math.random() * (100 + 1));
-
+    const emptyFieldsIndex = gameBoard.getEmptyFieldsIndex();
+   
     let choice = null;
-    if (value <= aiPrecision) {
+
+    if (value <= aiLevel) {
       choice = minimax(gameBoard, gameController.getAiPlayer()).index;
       const field = gameBoard.getField(choice);
     } else {
-      const emptyFieldsIndex = gameBoard.getEmptyFieldsIndex();
-      let randomMove = Math.floor(Math.random() * emptyFieldsIndex.length);
-      choice = emptyFieldsIndex[randomMove];
+      let randomCell = Math.floor(Math.random() * emptyFieldsIndex.length);
+      choice = emptyFieldsIndex[randomCell];
     }
     return choice;
   };
@@ -147,20 +149,21 @@ const minimaxAi = ((percentage) => {
   return {
     minimax,
     chooseField,
-    getAiPercentage,
-    setAiPercentage,
+    getAilevel,
+    setAilevel,
   };
-})(0);
+})();
 
 const gameController = (() => {
   const _playerOne = Player("x");
   const _playerTwo = Player("circle");
   const _aiPlayer = Player("circle");
 
-  const _aiLogic = minimaxAi;
-
   const getPlayerOne = () => _playerOne;
   const getAiPlayer = () => _aiPlayer;
+
+  const _aiLogic = minimaxAi;
+
 
   const _sleep = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -168,11 +171,6 @@ const gameController = (() => {
 
   let circleTurn;
   let vsAi;
-
-  const winningMessageElement = document.getElementById("winningMessage");
-  const winningMessageText = document.querySelector(
-    "[data-winning-message-text]"
-  );
 
   const setOpponent = (value) => {
     if (value == "player") {
@@ -235,7 +233,6 @@ const gameController = (() => {
     circleTurn = false;
     gameBoard.clear();
     displayController.clear();
-    winningMessageElement.classList.remove("show");
   };
 
   const checkDraw = (board) => {
@@ -314,11 +311,11 @@ const gameController = (() => {
 
   function endGame(draw) {
     if (draw) {
-      winningMessageText.innerText = "Draw!";
+      displayController.winningMessage("Draw!");
     } else {
-      winningMessageText.innerText = `${circleTurn ? "O's" : "X's"} Win!`;
+      displayController.winningMessage(`${circleTurn ? "O's" : "X's"} Win!`);
     }
-    winningMessageElement.classList.add("show");
+  displayController.showWinningMessage()
   }
 
   return {
@@ -336,6 +333,10 @@ const displayController = (() => {
   const restartButton = document.getElementById("restartButton");
   const htmlBoard = Array.from(document.querySelectorAll("[data-cell"));
   const form = document.querySelector(".form");
+  const winningMessageElement = document.getElementById("winningMessage");
+  const winningMessageText = document.querySelector(
+    "[data-winning-message-text]"
+  );
   const X_CLASS = "x";
   const CIRCLE_CLASS = "circle";
 
@@ -353,19 +354,19 @@ const displayController = (() => {
         break;
       case "easy":
         gameController.setOpponent("ai");
-        minimaxAi.setAiPercentage(20);
+        minimaxAi.setAilevel(20);
         break;
       case "medium":
         gameController.setOpponent("ai");
-        minimaxAi.setAiPercentage(70);
+        minimaxAi.setAilevel(70);
         break;
       case "hard":
         gameController.setOpponent("ai");
-        minimaxAi.setAiPercentage(90);
+        minimaxAi.setAilevel(90);
         break;
       case "unbeatable":
         gameController.setOpponent("ai");
-        minimaxAi.setAiPercentage(100);
+        minimaxAi.setAilevel(100);
         break;
     }
 
@@ -377,7 +378,14 @@ const displayController = (() => {
       cell.classList.remove(X_CLASS);
       cell.classList.remove(CIRCLE_CLASS);
     });
+    _hideWinningMessage();
   };
+
+  const showWinningMessage = () => winningMessageElement.classList.add("show");
+
+  const winningMessage = (text) => winningMessageText.innerText = text;
+
+  const _hideWinningMessage = () => winningMessageElement.classList.remove("show");
 
   const _boardEventListners = () => {
     for (let i = 0; i < htmlBoard.length; i++) {
@@ -394,5 +402,7 @@ const displayController = (() => {
 
   return {
     clear,
+    showWinningMessage,
+    winningMessage,
   };
 })();
